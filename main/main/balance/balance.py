@@ -96,6 +96,13 @@ class Balance:
             except Exception as e:
                 print(f"Error notifying observer {observer}: {e}")
     
+  
+    def register_observer(self, observer) -> None:
+        """Register an observer ensuring structural compliance with the observer contract."""
+        if observer is None or not hasattr(observer, "update") or not callable(getattr(observer, "update")):
+            raise TypeError("Observer must implement a callable 'update' method.")
+        if observer not in self._observers:
+            self._observers.append(observer)
 
     # Validator helper 
     def _validate_amount(self, amount: float) -> float:
