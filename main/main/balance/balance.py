@@ -81,9 +81,11 @@ class Balance:
         # Implemented strict typing 
         return float(self._balance)
 
-    def summary(self):
+    def summary(self) -> str:
         """Return a summary string of the net balance."""
-        pass
+        bal = float(self._balance)
+        sign = "-" if bal < 0 else ""
+        return f"Current Balance: {sign}${abs(bal):.2f}"
 
 
     def _notify_observers(self, transaction=None) -> None:
