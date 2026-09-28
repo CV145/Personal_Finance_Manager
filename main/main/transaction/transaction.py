@@ -10,7 +10,17 @@ class Transaction:
         self.category = category
 
     def __str__(self):
-        pass
+        # Introspection by retrieving the class name Transaction
+        return f"{self.__class__.__name__}(${self.amount}, category='{self.category}')"
 
     def __eq__(self, other):
-        pass
+
+        # Short-circuit for O(1) performance
+        if self is other:
+            return True
+
+        # For incompatible types
+        if not isinstance(other, Transaction):
+            return NotImplemented
+
+        return (self.amount, self.category) == (other.amount, other.category)
