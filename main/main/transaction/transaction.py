@@ -1,13 +1,16 @@
 # transaction.py
 
+from transaction import transaction_category
+import math
 from transaction.transaction_category import TransactionCategory
 
 class Transaction:
     """Represents a financial transaction with an amount and category."""
 
     def __init__(self, amount, category: TransactionCategory):
-        self.amount = amount
-        self.category = category
+        self.amount = self._validate_amount(amount)
+        self.category = self._validate_category(category)
+
 
     def __str__(self):
         # Introspection by retrieving the class name Transaction
@@ -24,3 +27,18 @@ class Transaction:
             return NotImplemented
 
         return (self.amount, self.category) == (other.amount, other.category)
+    
+    @staticmethod
+    def _validate_amount(amount):
+        if isinstance(amount, bool) or not isinstance(amount, (int, float)):
+            raise TypeError("Amount must be an int or float.")
+        if not math.isfinite(amount) or amount < 0:
+            raise ValueError("Amount must be a finite, non-negative number.")
+        return amount
+
+    @staticmethod
+    def _validate_category(category):
+        if not isinstance(category, TransactionCategory):
+            raise TypeError("Category must be an instance of TransactionCategory.")
+        return category
+
