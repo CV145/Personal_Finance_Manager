@@ -1,6 +1,5 @@
 # transaction.py
 
-from transaction import transaction_category
 import math
 from transaction.transaction_category import TransactionCategory
 
@@ -9,7 +8,7 @@ class Transaction:
 
     def __init__(self, amount, category: TransactionCategory):
         self.amount = self._validate_amount(amount)
-        self.category = self._validate_category(category)
+        self.category = category
 
 
     def __str__(self):
@@ -35,10 +34,4 @@ class Transaction:
         if not math.isfinite(amount) or amount < 0:
             raise ValueError("Amount must be a finite, non-negative number.")
         return amount
-
-    @staticmethod
-    def _validate_category(category):
-        if not isinstance(category, TransactionCategory):
-            raise TypeError("Category must be an instance of TransactionCategory.")
-        return category
 
