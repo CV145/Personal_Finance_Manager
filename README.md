@@ -11,8 +11,6 @@ Finally, Command helps implement reversibility and keep a linear timeline of tra
 
 ![Dashboard Overview](docs/images/dashboard_overview.png)
 
-![External Freelance Adapter](docs/images/freelance_adapter.png)
-
 ## Getting Started
 
 ### Dependencies
