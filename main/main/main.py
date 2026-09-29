@@ -10,9 +10,7 @@ from transaction.transaction_command import ApplyTransactionCommand
 from transaction.transaction_manager import TransactionManager
 
 
-
 def main():
-   
     # Create balance and add observers
     print("=== Starting Personal Finance Manager ===")
     balance = Balance.get_instance()
@@ -34,7 +32,9 @@ def main():
     ]
 
     # Create an external income transaction (via Adapter pattern)
-    freelance_income = ExternalFreelanceIncome(1200, "INV-98765", "Mobile App Project")
+    freelance_income = ExternalFreelanceIncome(
+        1200, "INV-98765", "Mobile App Project"
+    )
     adapter = TransactionAdapter(freelance_income)
     adapted_transaction = adapter.to_transaction()
 
@@ -55,6 +55,7 @@ def main():
     print("\n--- Demonstrating Redo Capability ---")
     manager.redo()
     print(f"Post-Redo {balance.summary()}")
+
 
 if __name__ == "__main__":
     main()

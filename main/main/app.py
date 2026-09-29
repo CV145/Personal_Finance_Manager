@@ -10,7 +10,7 @@ from transaction.transaction_manager import TransactionManager
 
 
 def init_session_state():
-    """Initialize singleton balance, command manager, and UI event stores in session state."""
+    """Initialize singleton balance, manager, and UI stores in session."""
     balance = Balance.get_instance()
 
     if "manager" not in st.session_state:
@@ -31,15 +31,17 @@ def init_session_state():
 
 
 def render_header_and_balance(balance, manager, threshold: float = 100.0):
-    """Render the dashboard header, balance KPI metric card, and threshold status alert."""
+    """Render dashboard header, balance KPI card, and threshold alert."""
     st.title("Personal Finance Manager")
 
     bal = balance.get_balance()
-    
+
     col1, col2, col3 = st.columns([2, 1, 1])
     with col1:
         delta_color = "normal" if bal >= threshold else "inverse"
-        delta_label = "Healthy" if bal >= threshold else "Low Balance Warning"
+        delta_label = (
+            "Healthy" if bal >= threshold else "Low Balance Warning"
+        )
         st.metric(
             label="Current Balance",
             value=f"${bal:,.2f}",
@@ -54,14 +56,20 @@ def render_header_and_balance(balance, manager, threshold: float = 100.0):
         st.metric(label="Redo State", value=redo_status)
 
     if bal < threshold:
-        st.warning(f"**Low Balance Alert Observer**: Current balance (\${bal:.2f}) is below the \${threshold:.2f} threshold!")
+        alert_msg = (
+            rf"**Low Balance Alert Observer**: Current balance (\${bal:.2f}) "
+            rf"is below the \${threshold:.2f} threshold!"
+        )
+        st.warning(alert_msg)
 
 
 def render_standard_transaction_form(balance, manager):
-    """Render the standard transaction creation form and dispatch via Command invoker."""
+    """Render standard transaction creation form and dispatch command."""
     st.subheader("Add Standard Transaction")
     with st.form("standard_tx_form", clear_on_submit=True):
-        amount = st.number_input("Amount ($)", min_value=0.01, value=50.0, step=10.0)
+        amount = st.number_input(
+            "Amount ($)", min_value=0.01, value=50.0, step=10.0
+        )
         category = st.selectbox(
             "Category",
             [TransactionCategory.INCOME, TransactionCategory.EXPENSE],
@@ -73,39 +81,49 @@ def render_standard_transaction_form(balance, manager):
                 txn = Transaction(amount, category)
                 cmd = ApplyTransactionCommand(balance, txn)
                 manager.execute_command(cmd)
-                st.session_state.logs.append(f"Applied {category.value}: ${amount:.2f}")
-                st.toast(f"Applied {category.value}: ${amount:.2f}")
+                log_msg = f"Applied {category.value}: ${amount:.2f}"
+                st.session_state.logs.append(log_msg)
+                st.toast(log_msg)
                 st.rerun()
             except Exception as e:
                 st.error(f"Transaction failed: {e}")
 
 
 def render_freelance_adapter_form(balance, manager):
-    """Render external invoice form, adapt via TransactionAdapter, and dispatch via Command invoker."""
+    """Render external invoice form, adapt, and dispatch via invoker."""
     st.subheader("External Freelance Income")
     with st.form("freelance_adapter_form", clear_on_submit=True):
         invoice_id = st.text_input("Invoice ID", value="INV-98765")
-        description = st.text_input("Project Description", value="Mobile App Development")
-        amount = st.number_input("Invoice Amount ($)", min_value=0.01, value=1200.0, step=50.0)
+        description = st.text_input(
+            "Project Description", value="Mobile App Development"
+        )
+        amount = st.number_input(
+            "Invoice Amount ($)", min_value=0.01, value=1200.0, step=50.0
+        )
         submitted = st.form_submit_button("Import and Adapt Invoice")
         if submitted:
             try:
-                external_payload = ExternalFreelanceIncome(amount, invoice_id, description)
+                external_payload = ExternalFreelanceIncome(
+                    amount, invoice_id, description
+                )
                 adapter = TransactionAdapter(external_payload)
                 adapted_txn = adapter.to_transaction()
-                
+
                 cmd = ApplyTransactionCommand(balance, adapted_txn)
                 manager.execute_command(cmd)
-                
-                st.session_state.logs.append(f"Adapted Freelance [{invoice_id}]: +${amount:.2f}")
-                st.toast(f"Adapted Freelance [{invoice_id}]: +${amount:.2f}")
+
+                log_entry = (
+                    f"Adapted Freelance [{invoice_id}]: +${amount:.2f}"
+                )
+                st.session_state.logs.append(log_entry)
+                st.toast(log_entry)
                 st.rerun()
             except Exception as e:
                 st.error(f"Adapter processing failed: {e}")
 
 
 def render_command_controls(balance, manager):
-    """Render undo, redo, and reset action controls enforcing Invoker state invariants."""
+    """Render undo, redo, and reset controls enforcing state invariants."""
     st.subheader("Transaction History Controls")
     col1, col2, col3 = st.columns([1, 1, 1])
 
@@ -118,8 +136,13 @@ def render_command_controls(balance, manager):
         if undo_clicked:
             try:
                 undone_cmd = manager.undo()
-                cat_val = getattr(undone_cmd.transaction.category, "value", str(undone_cmd.transaction.category))
-                msg = f"Reverted: {cat_val} (${undone_cmd.transaction.amount:.2f})"
+                cat_val = getattr(
+                    undone_cmd.transaction.category,
+                    "value",
+                    str(undone_cmd.transaction.category)
+                )
+                amt = undone_cmd.transaction.amount
+                msg = f"Reverted: {cat_val} (${amt:.2f})"
                 st.session_state.logs.append(msg)
                 st.toast(msg)
                 st.rerun()
@@ -135,8 +158,13 @@ def render_command_controls(balance, manager):
         if redo_clicked:
             try:
                 redone_cmd = manager.redo()
-                cat_val = getattr(redone_cmd.transaction.category, "value", str(redone_cmd.transaction.category))
-                msg = f"Re-applied: {cat_val} (${redone_cmd.transaction.amount:.2f})"
+                cat_val = getattr(
+                    redone_cmd.transaction.category,
+                    "value",
+                    str(redone_cmd.transaction.category)
+                )
+                amt = redone_cmd.transaction.amount
+                msg = f"Re-applied: {cat_val} (${amt:.2f})"
                 st.session_state.logs.append(msg)
                 st.toast(msg)
                 st.rerun()
@@ -164,8 +192,9 @@ def render_audit_log():
         for entry in reversed(st.session_state.logs):
             st.text(entry)
 
+
 def main():
-    """Main application orchestrator uniting Singleton, Adapter, Observer, and Command patterns."""
+    """Main application orchestrator uniting all four patterns."""
     st.set_page_config(
         page_title="Personal Finance Manager",
         layout="wide",

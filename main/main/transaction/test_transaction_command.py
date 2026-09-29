@@ -1,4 +1,3 @@
-
 import unittest
 from balance.balance import Balance
 from transaction.transaction import Transaction
@@ -13,12 +12,8 @@ class TestTransactionCommand(unittest.TestCase):
         self.balance = Balance.get_instance()
         self.balance.reset(clear_observers=True)
 
-    
     def test_apply_transaction_command_execute(self):
-        """
-        Verify that executing ApplyTransactionCommand applies the transaction to the receiver.
-        """
-
+        """Verify command applies transaction to the balance receiver."""
         # Arrange
         initial_balance = self.balance.get_balance()
         amount = 100.0
@@ -32,11 +27,8 @@ class TestTransactionCommand(unittest.TestCase):
         expected_balance = initial_balance + amount
         self.assertEqual(self.balance.get_balance(), expected_balance)
 
-
     def test_apply_transaction_command_undo(self):
-        """
-        Verify the calling undo() reverts the applied transaction on the balance receiver.
-        """
+        """Verify undo() reverts applied transaction on receiver."""
         # Arrange
         initial_balance = self.balance.get_balance()
         txn = Transaction(100, TransactionCategory.INCOME)
@@ -50,7 +42,7 @@ class TestTransactionCommand(unittest.TestCase):
         self.assertEqual(self.balance.get_balance(), initial_balance)
 
     def test_transaction_manager_execute(self):
-        """Verify that TransactionManager executes the command and updates undo availability."""
+        """Verify TransactionManager executes command and sets undo flag."""
         # Arrange
         manager = TransactionManager()
         initial_balance = self.balance.get_balance()
@@ -65,16 +57,14 @@ class TestTransactionCommand(unittest.TestCase):
         self.assertEqual(self.balance.get_balance(), initial_balance + amount)
         self.assertTrue(manager.can_undo)
         self.assertFalse(manager.can_redo)
-    
 
     def test_transaction_manager_undo(self):
-        """
-        Verify that TransactionManager reverts the last command executed and updates redo.
-        """
+        """Verify TransactionManager reverts last command and sets redo."""
         # Arrange
         manager = TransactionManager()
         initial_balance = self.balance.get_balance()
-        cmd = ApplyTransactionCommand(self.balance, Transaction(100, TransactionCategory.INCOME))
+        txn = Transaction(100, TransactionCategory.INCOME)
+        cmd = ApplyTransactionCommand(self.balance, txn)
         manager.execute_command(cmd)
 
         # Act
@@ -87,17 +77,15 @@ class TestTransactionCommand(unittest.TestCase):
         self.assertIs(undone_command, cmd)
 
     def test_transaction_manager_redo(self):
-        """
-        Verify that TransactionManager re-executes the undone command and updates the stack states.
-        """
+        """Verify TransactionManager re-executes undone command."""
         # Arrange
         manager = TransactionManager()
         initial_balance = self.balance.get_balance()
         amount = 100.0
-        cmd = ApplyTransactionCommand(self.balance, Transaction(amount, TransactionCategory.INCOME))
+        txn = Transaction(amount, TransactionCategory.INCOME)
+        cmd = ApplyTransactionCommand(self.balance, txn)
         manager.execute_command(cmd)
         manager.undo()
-
 
         # Act
         redone_command = manager.redo()
@@ -110,3 +98,7 @@ class TestTransactionCommand(unittest.TestCase):
 
     def tearDown(self):
         self.balance.reset(clear_observers=True)
+
+
+if __name__ == "__main__":
+    unittest.main()
