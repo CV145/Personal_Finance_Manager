@@ -13,7 +13,7 @@ class TestLowBalanceAlertObserver(unittest.TestCase):
     # This is called before every test
     def setUp(self):
         self.balance = Balance.get_instance()
-        self.balance.reset()
+        self.balance.reset(clear_observers=True)
 
     def test_alert_triggers_on_low_balance(self):
         observer = LowBalanceAlertObserver(threshold=50)

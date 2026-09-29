@@ -8,7 +8,10 @@ class TestBalance(unittest.TestCase):
 
     def setUp(self):
         self.balance = Balance.get_instance()
-        self.balance.reset()
+        self.balance.reset(clear_observers=True)
+
+    def tearDown(self):
+        self.balance.reset(clear_observers=True)
 
     def test_initial_balance(self):
         self.assertEqual(self.balance.get_balance(), 0.0)
