@@ -6,12 +6,24 @@ from transaction.transaction import Transaction
 from transaction.transaction_category import TransactionCategory
 from transaction.transaction_adapter import TransactionAdapter
 from transaction.external_income_transaction import ExternalFreelanceIncome
+from transaction.transaction_command import ApplyTransactionCommand
+from transaction.transaction_manager import TransactionManager
+
 
 
 def main():
-    print("Adding transactions...")
    
-    # TODO: Create balance and add observers
+    # Create balance and add observers
+    print("=== Starting Personal Finance Manager ===")
+    balance = Balance.get_instance()
+
+    balance.reset(clear_observers=True)
+
+    print_observer = PrintObserver()
+    alert_observer = LowBalanceAlertObserver(threshold=100.0)
+
+    balance.register_observer(print_observer)
+    balance.register_observer(alert_observer)
 
     # Create standard transactions
     transactions = [
@@ -28,7 +40,21 @@ def main():
 
     all_transactions = transactions + [adapted_transaction]
 
-    # TODO: Apply all transactions to balance
+    # Command Pattern
+    print("\n--- Executing Transactions via Command Invoker ---")
+    manager = TransactionManager()
+    for txn in all_transactions:
+        cmd = ApplyTransactionCommand(balance, txn)
+        manager.execute_command(cmd)
+    print(f"\nFinal {balance.summary()}")
+
+    # Demonstrating reversibility
+    print("\n--- Demonstrating Undo Capability ---")
+    manager.undo()
+    print(f"Post-Undo {balance.summary()}")
+    print("\n--- Demonstrating Redo Capability ---")
+    manager.redo()
+    print(f"Post-Redo {balance.summary()}")
 
 if __name__ == "__main__":
     main()
