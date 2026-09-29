@@ -9,7 +9,9 @@ Observer creates loose coupling so that Balance has zero knowledge of observer i
 
 Finally, Command helps implement reversibility and keep a linear timeline of transactions. Trade off: Long history stacks can cause memory bloat and this was addressed by introducing a max_history variable . 
 
+![Dashboard Overview](docs/images/dashboard_overview.png)
 
+![External Freelance Adapter](docs/images/freelance_adapter.png)
 
 ## Getting Started
 
@@ -55,15 +57,12 @@ python -m unittest balance/test_balance_observer.py
 - test_transaction_adapter.py → Ensures external income data is correctly adapted into Transaction objects.
 - test_balance_observer.py → Validates that low-balance alerts are triggered at the correct threshold.
 
-## Project Instructions
+### Running the web application
+```bash
+cd main/main
+streamlit run app.py
+```
 
-1. Implement Singleton Balance Class – Ensure only one balance object exists throughout the app.
-2. Complete Transaction Class – Handle income and expense transactions.
-3. Implement Adapter Pattern – Adapt external freelance income data into internal Transaction objects.
-4. Implement Observer Pattern – Create a low balance observer that triggers an alert when funds drop too low.
-5. Add Unit Tests – Write tests for all implemented functionality.
-6. Choose and Implement a Fourth Pattern – Pick one additional design pattern (e.g., Strategy, Command, Decorator, etc.) and integrate it into your project.
-7. Provide a Reflection – Add a short write-up in your repo (README or separate file) explaining your design choices.
 
 ## Built With
 

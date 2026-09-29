@@ -54,7 +54,7 @@ def render_header_and_balance(balance, manager, threshold: float = 100.0):
         st.metric(label="Redo State", value=redo_status)
 
     if bal < threshold:
-        st.warning(f"**Low Balance Alert Observer**: Current balance (${bal:.2f}) is below the ${threshold:.2f} threshold!")
+        st.warning(f"**Low Balance Alert Observer**: Current balance (\${bal:.2f}) is below the \${threshold:.2f} threshold!")
 
 
 def render_standard_transaction_form(balance, manager):
