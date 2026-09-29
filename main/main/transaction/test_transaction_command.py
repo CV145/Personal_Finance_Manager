@@ -1,4 +1,4 @@
-from main.main.transaction import transaction_manager
+
 import unittest
 from balance.balance import Balance
 from transaction.transaction import Transaction
@@ -85,6 +85,28 @@ class TestTransactionCommand(unittest.TestCase):
         self.assertFalse(manager.can_undo)
         self.assertTrue(manager.can_redo)
         self.assertIs(undone_command, cmd)
+
+    def test_transaction_manager_redo(self):
+        """
+        Verify that TransactionManager re-executes the undone command and updates the stack states.
+        """
+        # Arrange
+        manager = TransactionManager()
+        initial_balance = self.balance.get_balance()
+        amount = 100.0
+        cmd = ApplyTransactionCommand(self.balance, Transaction(amount, TransactionCategory.INCOME))
+        manager.execute_command(cmd)
+        manager.undo()
+
+
+        # Act
+        redone_command = manager.redo()
+
+        # Assert
+        self.assertEqual(self.balance.get_balance(), initial_balance + amount)
+        self.assertTrue(manager.can_undo)
+        self.assertFalse(manager.can_redo)
+        self.assertIs(redone_command, cmd)
 
     def tearDown(self):
         self.balance.reset(clear_observers=True)

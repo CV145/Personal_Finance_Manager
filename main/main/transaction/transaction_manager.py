@@ -34,6 +34,34 @@ class TransactionManager:
         if self._max_history is not None and len(self._undo_stack) > self._max_history:
             self._undo_stack.pop(0)
 
+    def undo(self):
+        """
+        Revert the most recent executed command and place it on the redo stack.
+        """
+        if not self.can_undo:
+            raise RuntimeError("Cannot undo: no executed commands available in history.")
+        cmd = self._undo_stack.pop()
+        cmd.undo()
+        self._redo_stack.append(cmd)
+        return cmd
+
+    def redo(self):
+        """
+        Re-execute the most recent undone command and place it back on the undo stack.
+        """
+        if not self.can_redo:
+            raise RuntimeError("Cannot redo: no undone commands available in history.")
+        
+        cmd = self._redo_stack.pop()
+        cmd.execute()
+        self._undo_stack.append(cmd)
+
+        if self._max_history is not None and len(self._undo_stack) > self._max_history:
+            # remove the element at index 0 (first/oldest)
+            # this forces python to shift all remaining n - 1 elements to the left by one position
+            self._undo_stack.pop(0)
+        
+        return cmd
 
     @property
     def can_undo(self) -> bool:
